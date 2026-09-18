@@ -1,39 +1,33 @@
-# Data Validation
+## Validation Results
 
-## Objective
+The initial validation was performed on the available raw train and validation CSV files.
 
-Verify that the extracted raw dataset is structurally valid, complete, consistent, and safe to use for model development.
+### Dataset Structure
 
-## Validation Checks
+| Check           |  Train | Validation |
+| --------------- | -----: | ---------: |
+| Rows            | 13,727 |      1,716 |
+| Columns         |      4 |          4 |
+| Missing values  |      0 |          0 |
+| Empty posts     |      0 |          0 |
+| Duplicate rows  |      0 |          0 |
+| Duplicate posts |      6 |          0 |
+| Unique IDs      | 13,727 |      1,716 |
 
-### 1. Schema Validation
+### Schema
 
-Verify:
+Both datasets contain:
 
-* expected columns exist
-* column names are correct
-* data types are appropriate
-* no unexpected columns are present
-
-Expected fields:
-
+* `ID`
 * `post`
-* `mental_health_disorder`
+* `class_name`
+* `class_id`
 
-### 2. Missing Values
+The `post` column contains text and the target is represented by `class_name` and `class_id`.
 
-Check for:
+### Label Validation
 
-* missing text
-* missing labels
-* empty strings
-* whitespace-only text
-
-Missing values must be identified before preprocessing.
-
-### 3. Label Validation
-
-Verify that every target value belongs to the expected set:
+The six observed classes are:
 
 * ADHD
 * Anxiety
@@ -42,73 +36,55 @@ Verify that every target value belongs to the expected set:
 * PTSD
 * None
 
-Unexpected labels must be investigated.
+The mapping between `class_id` and `class_name` is consistent across train and validation:
 
-### 4. Duplicate Validation
+* `0` → ADHD
+* `1` → Anxiety
+* `2` → Bipolar
+* `3` → Depression
+* `4` → PTSD
+* `5` → None
 
-Check for:
+### Text Validation
 
-* exact duplicate posts
-* duplicate rows
-* duplicates between train, validation, and test sets
+No empty or extremely short posts were found.
 
-Duplicates across splits could cause data leakage.
+Train text length:
 
-### 5. Text Validation
+* Minimum: 123 characters
+* Maximum: 38,168 characters
+* Mean: approximately 1,065 characters
+* Median: 658 characters
 
-Inspect:
+Validation text length:
 
-* empty or extremely short posts
-* unusually long posts
-* repeated characters
-* abnormal text
-* non-English text
-* potentially corrupted records
+* Minimum: 144 characters
+* Maximum: 14,273 characters
+* Mean: approximately 1,056 characters
+* Median: 658 characters
 
-These checks should identify problematic samples without modifying the raw dataset.
+Some posts contain non-ASCII characters. This is not considered an error by itself and requires further investigation before preprocessing.
 
-### 6. Split Validation
+### Duplicate and Leakage Check
 
-Verify:
+Six duplicate posts were found within the training dataset.
 
-* train, validation, and test sets exist as expected
-* samples are assigned to the correct split
-* target distributions are consistent with the dataset documentation
-* there is no overlap between splits
+No duplicate posts were found within the validation dataset.
 
-### 7. Privacy Validation
+One exact post occurs in both the training and validation datasets.
 
-Verify that unnecessary personal information is not present in the data.
+This represents a potential data leakage issue and must be investigated before model training.
 
-The original thesis states that usernames and URLs were removed.
+No overlapping IDs were found between the training and validation datasets.
 
-## Validation Outcome
+### Validation Issues Identified
 
-Each validation check should produce a measurable result.
+The following issues require investigation:
 
-Examples:
+1. The validation file contains 1,716 rows, while the thesis reports 1,488 validation samples.
+2. Six duplicate posts exist in the training data.
+3. One post appears in both training and validation.
+4. Text lengths vary considerably and include some very long posts.
+5. The meaning and appropriateness of non-ASCII characters require investigation before preprocessing.
 
-* number of missing posts
-* number of missing labels
-* number of duplicate rows
-* number of duplicate posts
-* number of unexpected labels
-* number of empty posts
-* number of suspicious text samples
-* number of overlapping samples between splits
-
-The raw dataset must remain unchanged during validation.
-
-## Open Questions
-
-The following values are measured from the dataset :
-
-* exact number of rows
-* exact column names
-* missing-value counts
-* duplicate counts
-* empty-text counts
-* text-length statistics
-* unique labels
-* cross-split overlap
-* unexpected records
+These issues should be resolved or documented before proceeding to preprocessing and model training.
